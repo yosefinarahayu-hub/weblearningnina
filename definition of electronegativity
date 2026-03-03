@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Electronegativity — Electron Attraction Power</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #05080f;
+  --surface: #0c1220;
+  --surface2: #111b2e;
+  --border: #1e2d47;
+  --text: #dde8f8;
+  --muted: #4a6080;
+  --H:  #a8c4e0;
+  --C:  #7ec88a;
+  --N:  #8899ee;
+  --O:  #ee6655;
+  --F:  #44ddaa;
+  --Cl: #66ddbb;
+  --S:  #f0cc44;
+  --P:  #dd8855;
+  --font: 'Outfit', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body {
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image:
+    linear-gradient(rgba(30,45,71,0.3) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(30,45,71,0.3) 1px,transparent 1px);
+  background-size:44px 44px;
+  pointer-events:none; z-index:0;
+}
+.page{position:relative;z-index:1;max-width:980px;margin:0 auto;padding:44px 20px 90px;}
+
+/* HEADER */
+.hdr{text-align:center;margin-bottom:48px;animation:riseIn .7s ease both;}
+.hdr-eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
+.hdr h1{font-size:clamp(2rem,5.5vw,3.5rem);font-weight:900;letter-spacing:-.03em;line-height:1.05;}
+.hdr h1 em{font-style:normal;color:#f0cc44;}
+.hdr-sub{margin-top:12px;font-size:15px;color:var(--muted);max-width:520px;margin-inline:auto;line-height:1.65;}
+
+/* SECTION LABEL */
+.sec-label{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:18px;display:flex;align-items:center;gap:10px;}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* ATOM CARDS */
+.atoms-section{margin-bottom:44px;animation:riseIn .7s .1s ease both;}
+.pick-hint{display:flex;justify-content:center;gap:24px;margin-bottom:16px;font-size:12px;font-family:var(--mono);color:var(--muted);}
+.pick-hint span{display:flex;align-items:center;gap:6px;}
+.ph-dot{width:10px;height:10px;border-radius:50%;}
+.atom-cards{display:grid;grid-template-columns:repeat(8,1fr);gap:10px;}
+@media(max-width:680px){.atom-cards{grid-template-columns:repeat(4,1fr);}}
+
+.acard{
+  background:var(--surface);
+  border:1.5px solid var(--border);
+  border-radius:14px;
+  padding:14px 6px 12px;
+  cursor:pointer;
+  text-align:center;
+  transition:transform .18s,box-shadow .18s,border-color .18s;
+  position:relative;
+  overflow:hidden;
+  user-select:none;
+}
+.acard::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--clr);border-radius:0 0 12px 12px;opacity:.6;}
+.acard:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(0,0,0,.5);border-color:var(--clr);}
+.acard.sel-A{border-color:var(--clr);background:color-mix(in srgb,var(--clr) 10%,var(--surface));box-shadow:0 0 18px color-mix(in srgb,var(--clr) 28%,transparent);}
+.acard.sel-B{border-color:var(--clr);background:color-mix(in srgb,var(--clr) 10%,var(--surface));box-shadow:0 0 18px color-mix(in srgb,var(--clr) 28%,transparent);outline:2px dashed var(--clr);outline-offset:2px;}
+.acard-sym{font-size:26px;font-weight:900;color:var(--clr);line-height:1;display:block;}
+.acard-name{font-size:8.5px;color:var(--muted);margin-top:4px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;}
+.acard-en{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--clr);margin-top:6px;display:block;}
+.acard-bar-wrap{margin-top:8px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.acard-bar{height:100%;border-radius:2px;}
+
+/* BOND STAGE */
+.bond-stage{background:var(--surface);border:1.5px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:28px;animation:riseIn .7s .2s ease both;}
+.bond-stage-top{padding:18px 24px 0;display:flex;justify-content:space-between;align-items:center;}
+.bst-title{font-size:11px;font-family:var(--mono);color:var(--muted);letter-spacing:.14em;text-transform:uppercase;}
+.bond-canvas-wrap{position:relative;height:250px;}
+canvas#bondCanvas{width:100%;height:100%;display:block;}
+.no-sel-msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--muted);font-family:var(--mono);pointer-events:none;text-align:center;padding:20px;}
+
+/* STATS */
+.bond-stats{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid var(--border);}
+.bstat{padding:18px 16px;border-right:1px solid var(--border);text-align:center;}
+.bstat:last-child{border-right:none;}
+.bstat-label{font-size:10px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;}
+.bstat-val{font-size:26px;font-weight:800;font-family:var(--mono);transition:color .4s;}
+.bstat-sub{font-size:10px;color:var(--muted);margin-top:4px;}
+
+/* DELTA BAR */
+.delta-section{padding:20px 24px 24px;border-top:1px solid var(--border);}
+.delta-row{display:flex;justify-content:space-between;font-size:10px;font-family:var(--mono);color:var(--muted);margin-bottom:8px;}
+.delta-track{height:14px;background:var(--surface2);border-radius:7px;overflow:hidden;border:1px solid var(--border);position:relative;}
+.delta-track::after{content:'';position:absolute;left:60.6%;top:0;bottom:0;width:2px;background:rgba(255,255,255,0.18);}
+.delta-fill{height:100%;border-radius:7px;transition:width .6s cubic-bezier(.4,0,.2,1),background .5s;}
+.bond-verdict{text-align:center;margin-top:14px;font-size:19px;font-weight:800;transition:color .4s;letter-spacing:-.01em;}
+.bond-verdict-explain{text-align:center;font-size:13px;color:var(--muted);margin-top:8px;line-height:1.65;max-width:580px;margin-inline:auto;}
+
+/* POWER RANKING */
+.ranking-section{background:var(--surface);border:1.5px solid var(--border);border-radius:20px;padding:28px;margin-bottom:28px;animation:riseIn .7s .3s ease both;}
+.rank-bars{display:flex;flex-direction:column;gap:10px;margin-top:18px;}
+.rank-row{display:grid;grid-template-columns:26px 90px 1fr 46px;align-items:center;gap:12px;border-radius:8px;padding:3px 6px;transition:background .3s;}
+.rank-row.is-sel{background:rgba(255,255,255,0.04);}
+.rank-pos{font-family:var(--mono);font-size:10px;color:var(--muted);text-align:right;}
+.rank-atom{font-size:13px;font-weight:700;}
+.rank-atom span{font-size:10px;font-weight:400;color:var(--muted);margin-left:4px;}
+.rank-bar-wrap{height:10px;background:var(--surface2);border-radius:5px;overflow:hidden;border:1px solid var(--border);}
+.rank-bar{height:100%;border-radius:5px;transition:width .8s cubic-bezier(.4,0,.2,1);}
+.rank-val{font-family:var(--mono);font-size:12px;font-weight:700;text-align:right;}
+
+/* EXAMPLES */
+.examples-section{background:var(--surface);border:1.5px solid var(--border);border-radius:20px;padding:28px;animation:riseIn .7s .35s ease both;}
+.ex-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px;margin-top:18px;}
+.ex-card{background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:14px 12px;cursor:pointer;transition:all .2s;text-align:center;}
+.ex-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.4);}
+.ex-mol{font-size:21px;font-weight:900;display:block;margin-bottom:3px;letter-spacing:-.01em;}
+.ex-delta{font-family:var(--mono);font-size:10px;color:var(--muted);display:block;margin-bottom:4px;}
+.ex-type{font-size:9.5px;font-weight:700;font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;}
+.ex-note{font-size:10px;color:var(--muted);margin-top:5px;line-height:1.4;display:block;}
+
+@keyframes riseIn{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:translateY(0);}}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-eyebrow">⚛ Interactive Covalent Bond Simulation</div>
+    <h1>Electron<br><em>Attraction Power</em></h1>
+    <p class="hdr-sub">In a covalent bond, each atom exerts a <strong style="color:var(--text)">pulling power</strong> on the shared electrons. The atom with higher electronegativity pulls the electron cloud closer to itself.</p>
+  </div>
+
+  <!-- ATOM CARDS -->
+  <div class="atoms-section">
+    <div class="sec-label">Step 1 — Click to select Atom A, then Atom B</div>
+    <div class="pick-hint">
+      <span><div class="ph-dot" style="background:#f0cc44"></div>Atom A (solid outline)</span>
+      <span><div class="ph-dot" style="border:2px dashed #f0cc44;background:transparent"></div>Atom B (dashed outline)</span>
+    </div>
+    <div class="atom-cards" id="atomCards"></div>
+  </div>
+
+  <!-- BOND STAGE -->
+  <div class="bond-stage">
+    <div class="bond-stage-top">
+      <div class="bst-title">⚡ Bond Visualisation</div>
+      <div style="font-size:11px;font-family:var(--mono);color:var(--muted)" id="pairLabel">—</div>
+    </div>
+    <div class="bond-canvas-wrap">
+      <canvas id="bondCanvas"></canvas>
+      <div class="no-sel-msg" id="noSelMsg">Select Atom A and Atom B above to see the bond</div>
+    </div>
+    <div class="bond-stats">
+      <div class="bstat">
+        <div class="bstat-label">Atom A — Pull Power</div>
+        <div class="bstat-val" id="statA" style="color:var(--muted)">—</div>
+        <div class="bstat-sub" id="statAName">select atom</div>
+      </div>
+      <div class="bstat">
+        <div class="bstat-label">ΔEN Difference</div>
+        <div class="bstat-val" id="statDelta" style="color:var(--muted)">—</div>
+        <div class="bstat-sub">Pauling units</div>
+      </div>
+      <div class="bstat">
+        <div class="bstat-label">Atom B — Pull Power</div>
+        <div class="bstat-val" id="statB" style="color:var(--muted)">—</div>
+        <div class="bstat-sub" id="statBName">select atom</div>
+      </div>
+    </div>
+    <div class="delta-section">
+      <div class="delta-row">
+        <span>ΔEN = 0 → Nonpolar Covalent</span>
+        <span>↑ ΔEN &gt; 2.0 → Ionic Bond</span>
+      </div>
+      <div class="delta-track">
+        <div class="delta-fill" id="deltaFill" style="width:0%"></div>
+      </div>
+      <div class="bond-verdict" id="bondVerdict" style="color:var(--muted)">Select two atoms to see bond type</div>
+      <div class="bond-verdict-explain" id="bondExplain"></div>
+    </div>
+  </div>
+
+  <!-- POWER RANKING -->
+  <div class="ranking-section">
+    <div class="sec-label">Electron Pull Power — Pauling Electronegativity Ranking</div>
+    <p style="font-size:13px;color:var(--muted);line-height:1.65;">The longer the bar, the stronger the atom attracts bonding electrons towards itself in a covalent bond. Selected atoms are highlighted.</p>
+    <div class="rank-bars" id="rankBars"></div>
+  </div>
+
+  <!-- EXAMPLES -->
+  <div class="examples-section">
+    <div class="sec-label">Real Covalent Bond Examples — click to load</div>
+    <p style="font-size:13px;color:var(--muted);line-height:1.65;">Every example below is a <strong style="color:var(--text)">covalent bond</strong>. The electron cloud shifts toward whichever atom has greater pull power.</p>
+    <div class="ex-grid" id="exGrid"></div>
+  </div>
+
+</div>
+<script>
+// ── DATA ────────────────────────────────────────────────────────────────────
+const ATOMS = [
+  {sym:'H',  name:'Hydrogen',   en:2.20},
+  {sym:'C',  name:'Carbon',     en:2.55},
+  {sym:'N',  name:'Nitrogen',   en:3.04},
+  {sym:'O',  name:'Oxygen',     en:3.44},
+  {sym:'F',  name:'Fluorine',   en:3.98},
+  {sym:'Cl', name:'Chlorine',   en:3.16},
+  {sym:'S',  name:'Sulfur',     en:2.58},
+  {sym:'P',  name:'Phosphorus', en:2.19},
+];
+
+const CLR = {H:'#a8c4e0',C:'#7ec88a',N:'#8899ee',O:'#ee6655',F:'#44ddaa',Cl:'#66ddbb',S:'#f0cc44',P:'#dd8855'};
+
+const EXAMPLES = [
+  {mol:'H — H',  a:'H', b:'H',  note:'Perfectly equal sharing. Pure nonpolar covalent.'},
+  {mol:'C — C',  a:'C', b:'C',  note:'Identical atoms, zero difference. Nonpolar covalent.'},
+  {mol:'C — H',  a:'C', b:'H',  note:'Nearly equal pull. Essentially nonpolar covalent (organic bonds).'},
+  {mol:'P — H',  a:'P', b:'H',  note:'Very small pull difference. Weakly polar covalent (PH₃).'},
+  {mol:'S — H',  a:'S', b:'H',  note:'S pulls slightly harder. Polar covalent (H₂S).'},
+  {mol:'N — H',  a:'N', b:'H',  note:'N pulls harder. Polar covalent (as in NH₃ ammonia).'},
+  {mol:'C — N',  a:'C', b:'N',  note:'N pulls harder. Polar covalent (C–N bond in amino acids).'},
+  {mol:'C — O',  a:'C', b:'O',  note:'O pulls harder. Polar covalent (C=O in CO₂, ketones).'},
+  {mol:'O — H',  a:'O', b:'H',  note:'O pulls strongly. Highly polar covalent (H₂O water molecule).'},
+  {mol:'N — O',  a:'N', b:'O',  note:'O pulls harder. Polar covalent (NO, NO₂).'},
+  {mol:'C — Cl', a:'C', b:'Cl', note:'Cl pulls harder. Polar covalent (chloroalkanes).'},
+  {mol:'Cl — H', a:'Cl',b:'H',  note:'Cl pulls harder. Polar covalent (HCl hydrochloric acid).'},
+  {mol:'C — F',  a:'C', b:'F',  note:'F pulls much harder. Strongly polar covalent (Teflon, freons).'},
+  {mol:'N — F',  a:'N', b:'F',  note:'F pulls harder. Polar covalent (NF₃).'},
+  {mol:'S — O',  a:'S', b:'O',  note:'O pulls harder. Polar covalent (SO₂, SO₃).'},
+  {mol:'F — H',  a:'F', b:'H',  note:'F has greatest pull. Highly polar covalent — NOT ionic (HF).'},
+  {mol:'O — F',  a:'O', b:'F',  note:'F pulls harder. Polar covalent (OF₂).'},
+  {mol:'P — O',  a:'P', b:'O',  note:'O pulls harder. Polar covalent (phosphate groups, DNA backbone).'},
+];
+
+// ── STATE ───────────────────────────────────────────────────────────────────
+let selA=null, selB=null, nextSel='A';
+let electrons=[];
+
+// ── CANVAS ──────────────────────────────────────────────────────────────────
+const canvas=document.getElementById('bondCanvas');
+const ctx=canvas.getContext('2d');
+
+function resizeCanvas(){
+  const r=canvas.parentElement.getBoundingClientRect();
+  canvas.width=r.width; canvas.height=r.height;
+}
+
+function initElectrons(shift){
+  electrons=Array.from({length:7},(_,i)=>({
+    angle:(i/7)*Math.PI*2,
+    r:22+Math.random()*16,
+    speed:0.016+Math.random()*0.012,
+    shift
+  }));
+}
+
+function drawScene(){
+  const W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+  if(!selA||!selB) return;
+
+  const atomA=ATOMS.find(a=>a.sym===selA);
+  const atomB=ATOMS.find(a=>a.sym===selB);
+  const delta=Math.abs(atomA.en-atomB.en);
+  const shift=(atomB.en-atomA.en)/3.98;
+
+  const rA=34+atomA.en*3.2, rB=34+atomB.en*3.2;
+  const xA=W*0.27, xB=W*0.73, yM=H*0.50;
+
+  // Bond line
+  const bg=ctx.createLinearGradient(xA,yM,xB,yM);
+  bg.addColorStop(0,CLR[selA]); bg.addColorStop(1,CLR[selB]);
+  ctx.beginPath(); ctx.moveTo(xA+rA*0.72,yM); ctx.lineTo(xB-rB*0.72,yM);
+  ctx.strokeStyle=bg; ctx.lineWidth=2.5; ctx.shadowColor='#fff'; ctx.shadowBlur=5; ctx.stroke(); ctx.shadowBlur=0;
+
+  // Electron cloud
+  const cloudX=W*0.5+shift*W*0.15;
+  const cg=ctx.createRadialGradient(cloudX,yM,0,cloudX,yM,60);
+  cg.addColorStop(0,'rgba(240,204,68,0.16)'); cg.addColorStop(0.6,'rgba(240,204,68,0.05)'); cg.addColorStop(1,'rgba(240,204,68,0)');
+  ctx.beginPath(); ctx.ellipse(cloudX,yM,66,38,0,0,Math.PI*2); ctx.fillStyle=cg; ctx.fill();
+
+  // Electrons
+  electrons.forEach(e=>{
+    e.angle+=e.speed;
+    const ex=cloudX+Math.cos(e.angle)*e.r*1.65;
+    const ey=yM+Math.sin(e.angle)*e.r*0.58;
+    const eg=ctx.createRadialGradient(ex,ey,0,ex,ey,5);
+    eg.addColorStop(0,'rgba(255,224,60,1)'); eg.addColorStop(1,'rgba(255,224,60,0)');
+    ctx.beginPath(); ctx.arc(ex,ey,4.5,0,Math.PI*2);
+    ctx.fillStyle=eg; ctx.shadowColor='#ffe040'; ctx.shadowBlur=14; ctx.fill(); ctx.shadowBlur=0;
+  });
+
+  // Partial charges δ
+  if(delta>0.25){
+    ctx.font='bold 14px Outfit,sans-serif'; ctx.textAlign='center';
+    const domB=atomB.en>atomA.en;
+    ctx.fillStyle=domB?'rgba(160,185,210,0.4)':CLR[selA];
+    ctx.fillText('δ−',xA,yM-rA-10);
+    ctx.fillStyle=domB?CLR[selB]:'rgba(160,185,210,0.4)';
+    ctx.fillText('δ−',xB,yM-rB-10);
+    // flip
+    ctx.fillStyle=domB?'rgba(160,185,210,0.4)':CLR[selA];
+    ctx.fillText(domB?'δ+':'δ−',xA,yM-rA-10);
+    ctx.fillStyle=domB?CLR[selB]:'rgba(160,185,210,0.4)';
+    ctx.fillText(domB?'δ−':'δ+',xB,yM-rB-10);
+  }
+
+  // Arrow showing direction of pull
+  if(delta>0.15){
+    const toRight=atomB.en>atomA.en;
+    const arrowY=yM+Math.max(rA,rB)+24;
+    const x1=W*0.5+(toRight?-38:38), x2=W*0.5+(toRight?32:-32);
+    const ac=toRight?CLR[selB]:CLR[selA];
+    ctx.beginPath(); ctx.moveTo(x1,arrowY); ctx.lineTo(x2,arrowY);
+    ctx.strokeStyle=ac; ctx.lineWidth=2.2; ctx.shadowColor=ac; ctx.shadowBlur=8; ctx.stroke(); ctx.shadowBlur=0;
+    ctx.beginPath();
+    if(toRight){ctx.moveTo(x2,arrowY);ctx.lineTo(x2-9,arrowY-5);ctx.lineTo(x2-9,arrowY+5);}
+    else{ctx.moveTo(x2,arrowY);ctx.lineTo(x2+9,arrowY-5);ctx.lineTo(x2+9,arrowY+5);}
+    ctx.fillStyle=ac; ctx.fill();
+    ctx.fillStyle=ac; ctx.font='600 11px Outfit,sans-serif'; ctx.textAlign='center';
+    ctx.fillText(`${(toRight?atomB:atomA).name} (EN ${(toRight?atomB:atomA).en}) pulls electrons this way`,W*0.5,arrowY+17);
+  } else if(selA&&selB){
+    ctx.fillStyle='rgba(160,190,220,0.38)'; ctx.font='600 11px Outfit,sans-serif'; ctx.textAlign='center';
+    ctx.fillText('Equal pull — electrons shared symmetrically',W*0.5,yM+Math.max(rA,rB)+40);
+  }
+
+  // Draw atoms
+  [['A',xA,yM,rA,atomA],[' B',xB,yM,rB,atomB]].forEach(([,x,y,r,atom])=>{
+    const clr=CLR[atom.sym];
+    // aura (size = pull power)
+    const ar=r+atom.en*7;
+    const aag=ctx.createRadialGradient(x,y,r,x,y,ar);
+    aag.addColorStop(0,clr+'30'); aag.addColorStop(1,clr+'00');
+    ctx.beginPath(); ctx.arc(x,y,ar,0,Math.PI*2); ctx.fillStyle=aag; ctx.fill();
+    // body
+    const bbg=ctx.createRadialGradient(x-r*.3,y-r*.3,2,x,y,r);
+    bbg.addColorStop(0,clr+'cc'); bbg.addColorStop(1,clr+'55');
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.fillStyle=bbg; ctx.shadowColor=clr; ctx.shadowBlur=22; ctx.fill();
+    ctx.strokeStyle=clr; ctx.lineWidth=1.8; ctx.stroke(); ctx.shadowBlur=0;
+    // symbol
+    ctx.fillStyle='#fff'; ctx.font=`bold ${Math.round(r*.56)}px Outfit,sans-serif`; ctx.textAlign='center';
+    ctx.fillText(atom.sym,x,y+r*.2);
+    // EN value
+    ctx.fillStyle='rgba(255,255,255,.5)'; ctx.font=`600 10px JetBrains Mono,monospace`;
+    ctx.fillText('EN '+atom.en.toFixed(2),x,y+r*.6);
+  });
+}
+
+// ── ATOM CARDS ──────────────────────────────────────────────────────────────
+function buildAtomCards(){
+  const grid=document.getElementById('atomCards');
+  ATOMS.forEach(atom=>{
+    const clr=CLR[atom.sym];
+    const pct=(atom.en/4.0*100).toFixed(1);
+    const card=document.createElement('div');
+    card.className='acard'; card.id='acard-'+atom.sym;
+    card.style.setProperty('--clr',clr);
+    card.innerHTML=`<span class="acard-sym">${atom.sym}</span>
+      <div class="acard-name">${atom.name}</div>
+      <span class="acard-en">${atom.en}</span>
+      <div class="acard-bar-wrap"><div class="acard-bar" style="width:${pct}%;background:${clr}"></div></div>`;
+    card.onclick=()=>pickAtom(atom.sym);
+    grid.appendChild(card);
+  });
+}
+
+function pickAtom(sym){
+  const clr=CLR[sym];
+  if(nextSel==='A'){
+    selA=sym;
+    document.querySelectorAll('.acard').forEach(c=>c.classList.remove('sel-A'));
+    const c=document.getElementById('acard-'+sym);
+    c.style.setProperty('--clr',clr); c.classList.add('sel-A');
+    nextSel='B';
+  } else {
+    selB=sym;
+    document.querySelectorAll('.acard').forEach(c=>c.classList.remove('sel-B'));
+    const c=document.getElementById('acard-'+sym);
+    c.style.setProperty('--clr',clr); c.classList.add('sel-B');
+    nextSel='A';
+  }
+  if(selA&&selB){
+    document.getElementById('noSelMsg').style.display='none';
+    const eA=ATOMS.find(a=>a.sym===selA).en, eB=ATOMS.find(a=>a.sym===selB).en;
+    initElectrons((eB-eA)/3.98);
+    updateStats(); updateRanking();
+  }
+}
+
+// ── STATS ───────────────────────────────────────────────────────────────────
+function updateStats(){
+  if(!selA||!selB) return;
+  const atomA=ATOMS.find(a=>a.sym===selA), atomB=ATOMS.find(a=>a.sym===selB);
+  const delta=Math.abs(atomA.en-atomB.en);
+
+  document.getElementById('statA').textContent=atomA.en.toFixed(2);
+  document.getElementById('statA').style.color=CLR[selA];
+  document.getElementById('statAName').textContent=atomA.name;
+  document.getElementById('statB').textContent=atomB.en.toFixed(2);
+  document.getElementById('statB').style.color=CLR[selB];
+  document.getElementById('statBName').textContent=atomB.name;
+  document.getElementById('statDelta').textContent=delta.toFixed(2);
+  document.getElementById('pairLabel').textContent=selA+' — '+selB;
+
+  const fill=document.getElementById('deltaFill');
+  fill.style.width=Math.min(delta/3.3*100,100)+'%';
+
+  let color,verdict,explain;
+  if(delta===0){
+    color='#a8c4e0'; verdict='⚖️ Pure Nonpolar Covalent Bond';
+    explain=`Identical atoms have equal pull power (ΔEN = 0). The bonding electrons are shared perfectly equally — the electron cloud sits exactly in the middle.`;
+  } else if(delta<0.5){
+    color='#7ec88a'; verdict='⚖️ Nonpolar Covalent Bond';
+    explain=`ΔEN = ${delta.toFixed(2)} (less than 0.5). The difference in pull power is too small to cause significant electron shift. Electrons are shared almost equally — this is a nonpolar covalent bond.`;
+  } else if(delta<=2.0){
+    const stronger=atomA.en>atomB.en?atomA.name:atomB.name;
+    color='#f0cc44'; verdict='⚡ Polar Covalent Bond';
+    explain=`ΔEN = ${delta.toFixed(2)} (between 0.5 and 2.0). ${stronger} has greater pull power and draws the shared electron cloud closer to itself. This creates partial charges: δ− on ${stronger} and δ+ on the other atom — a polar covalent bond.`;
+  } else {
+    const stronger=atomA.en>atomB.en?atomA.name:atomB.name;
+    color='#ee6655'; verdict='🔋 Ionic Bond';
+    explain=`ΔEN = ${delta.toFixed(2)} (greater than 2.0). The difference in pull power is so extreme that ${stronger} effectively removes the electrons from the other atom entirely. This forms ions, not shared electrons — an ionic bond.`;
+  }
+
+  fill.style.background=color;
+  const v=document.getElementById('bondVerdict');
+  v.textContent=verdict; v.style.color=color;
+  document.getElementById('statDelta').style.color=color;
+  document.getElementById('bondExplain').textContent=explain;
+}
+
+// ── RANKING ─────────────────────────────────────────────────────────────────
+function buildRanking(){
+  const sorted=[...ATOMS].sort((a,b)=>b.en-a.en);
+  const container=document.getElementById('rankBars');
+  sorted.forEach((atom,i)=>{
+    const clr=CLR[atom.sym];
+    const pct=(atom.en/4.0*100).toFixed(1);
+    const row=document.createElement('div');
+    row.className='rank-row'; row.id='rank-'+atom.sym;
+    row.innerHTML=`<div class="rank-pos">#${i+1}</div>
+      <div class="rank-atom" style="color:${clr}">${atom.sym}<span>${atom.name}</span></div>
+      <div class="rank-bar-wrap"><div class="rank-bar" style="width:${pct}%;background:${clr}"></div></div>
+      <div class="rank-val" style="color:${clr}">${atom.en}</div>`;
+    container.appendChild(row);
+  });
+}
+
+function updateRanking(){
+  document.querySelectorAll('.rank-row').forEach(r=>{
+    const sym=r.id.replace('rank-','');
+    r.classList.toggle('is-sel',sym===selA||sym===selB);
+  });
+}
+
+// ── EXAMPLES ────────────────────────────────────────────────────────────────
+function buildExamples(){
+  const grid=document.getElementById('exGrid');
+  EXAMPLES.forEach(ex=>{
+    const eA=ATOMS.find(a=>a.sym===ex.a).en, eB=ATOMS.find(a=>a.sym===ex.b).en;
+    const delta=Math.abs(eA-eB);
+    let typeColor,typeLabel;
+    if(delta<0.5){typeColor='#7ec88a';typeLabel='Nonpolar Covalent';}
+    else{typeColor='#f0cc44';typeLabel='Polar Covalent';}
+    const card=document.createElement('div');
+    card.className='ex-card';
+    card.style.borderColor=typeColor+'44';
+    card.innerHTML=`<span class="ex-mol">${ex.mol}</span>
+      <span class="ex-delta">ΔEN = ${delta.toFixed(2)}</span>
+      <span class="ex-type" style="color:${typeColor}">${typeLabel}</span>
+      <span class="ex-note">${ex.note}</span>`;
+    card.onclick=()=>loadExample(ex);
+    grid.appendChild(card);
+  });
+}
+
+function loadExample(ex){
+  selA=ex.a; selB=ex.b; nextSel='A';
+  document.querySelectorAll('.acard').forEach(c=>c.classList.remove('sel-A','sel-B'));
+  const cA=document.getElementById('acard-'+ex.a), cB=document.getElementById('acard-'+ex.b);
+  if(cA){cA.style.setProperty('--clr',CLR[ex.a]);cA.classList.add('sel-A');}
+  if(cB){cB.style.setProperty('--clr',CLR[ex.b]);cB.classList.add('sel-B');}
+  document.getElementById('noSelMsg').style.display='none';
+  const eA=ATOMS.find(a=>a.sym===ex.a).en, eB=ATOMS.find(a=>a.sym===ex.b).en;
+  initElectrons((eB-eA)/3.98);
+  updateStats(); updateRanking();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── INIT ────────────────────────────────────────────────────────────────────
+resizeCanvas();
+window.addEventListener('resize',resizeCanvas);
+buildAtomCards(); buildRanking(); buildExamples();
+initElectrons(0);
+(function loop(){drawScene();requestAnimationFrame(loop);})();
+
+// Default: O—H
+setTimeout(()=>loadExample(EXAMPLES.find(e=>e.mol==='O — H')),350);
+</script>
+</body>
+</html>
