@@ -3,99 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Electronegativity & Chemical Bonding Simulation</title>
+    <title>Electronegativity & Bonding Simulation (v2)</title>
     <style>
         :root {
-            --bg: #f4f7f6;
+            --bg: #f0f4f8;
             --card: #ffffff;
-            --text-main: #2c3e50;
-            --accent: #3498db;
+            --text: #1a202c;
+            --accent: #4a5568;
         }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text-main); display: flex; flex-direction: column; align-items: center; padding: 30px; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .container { background: var(--card); padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-width: 1000px; width: 100%; }
         .header { text-align: center; margin-bottom: 25px; }
-        .container { background: var(--card); padding: 30px; border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); max-width: 950px; width: 100%; }
         
-        /* Periodic Table Grid Layout */
-        .periodic-table { display: grid; grid-template-columns: repeat(18, 1fr); gap: 5px; margin-bottom: 30px; overflow-x: auto; padding: 5px; }
-        .element { aspect-ratio: 1/1.2; border: 1px solid #ddd; border-radius: 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; position: relative; background: #fff; }
-        .element:hover { transform: scale(1.1); z-index: 5; box-shadow: 0 4px 10px rgba(0,0,0,0.15); border-color: #555; }
-        .element.active { border: 3px solid #222; transform: scale(1.05); box-shadow: 0 0 8px rgba(0,0,0,0.2); }
+        /* Table Grid */
+        .periodic-table { display: grid; grid-template-columns: repeat(18, 1fr); gap: 6px; margin-bottom: 30px; }
+        .element { aspect-ratio: 1/1.2; border: 1px solid #cbd5e0; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; background: white; position: relative; }
+        .element:hover { transform: translateY(-4px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); border-color: #2d3748; z-index: 10; }
+        .element.active { border: 3px solid #1a202c; transform: scale(1.05); box-shadow: 0 0 10px rgba(0,0,0,0.2); }
         
-        .symbol { font-size: 1.1rem; font-weight: bold; }
-        .number { font-size: 0.6rem; position: absolute; top: 2px; left: 3px; color: #777; }
-        .en-val { font-size: 0.7rem; font-weight: bold; margin-top: 1px; }
+        .symbol { font-size: 1.2rem; font-weight: 800; }
+        .number { font-size: 0.65rem; position: absolute; top: 3px; left: 5px; color: #718096; }
+        .en-val { font-size: 0.75rem; font-weight: 700; margin-top: 2px; }
 
-        /* Color Coding based on Source Trends */
-        .low { background-color: #ffff00; }      /* Yellow: Low EN (0.7 - 1.2) */
-        .mid { background-color: #ffcc00; }      /* Light Orange: Mid EN (1.3 - 1.9) */
-        .mid-high { background-color: #ff6600; color: white; } /* Orange: High EN (2.0 - 2.8) */
-        .high { background-color: #ff0000; color: white; }    /* Red: Highest EN (3.0 - 4.0) */
-        .noble { background-color: #f8f9fa; color: #3498db; border-color: #eee; } /* Noble Gases */
+        /* Colors based on Source [1] */
+        .low { background-color: #ffff00; }      /* Yellow: EN 0.7 - 1.2 */
+        .mid { background-color: #ffcc00; }      /* Yellow-Orange: EN 1.3 - 1.9 */
+        .mid-high { background-color: #ff8c00; color: white; } /* Orange: EN 2.0 - 2.8 */
+        .high { background-color: #ff0000; color: white; }    /* Red: EN 3.0 - 4.0 */
+        .noble { background-color: #edf2f7; color: #3182ce; }  /* Noble Gases */
         .empty { visibility: hidden; }
 
-        /* Simulation Results Panel */
-        .result-panel { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 20px; background: #fdfdfd; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0; min-height: 150px; }
-        .selected-info { font-size: 1rem; border-right: 1px solid #eee; padding-right: 20px; }
-        .bond-info { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .badge { padding: 6px 12px; border-radius: 15px; color: white; font-weight: bold; margin-top: 8px; font-size: 0.85rem; }
-        .formula { font-size: 2.2rem; font-weight: 800; color: #2c3e50; margin: 5px 0; }
+        /* Results Display */
+        .result-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; background: #f7fafc; padding: 25px; border-radius: 12px; border: 2px solid #e2e8f0; }
+        .formula-box { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; border-left: 2px solid #e2e8f0; }
+        .formula { font-size: 2.5rem; font-weight: 800; margin: 10px 0; color: #2d3748; }
+        .badge { padding: 8px 16px; border-radius: 20px; color: white; font-weight: bold; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; }
         sub { font-size: 1.2rem; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <h1>Electronegativity Simulation</h1>
-    <p>Select two elements to calculate electronegativity difference (ΔEN) and predict bonding.</p>
+    <h1>Chemical Bonding Simulation</h1>
+    <p>Using EN values from sources: <b>Highest at top-right (F: 4.0)</b>, <b>Lowest at bottom-left (Cs: 0.7)</b>.</p>
 </div>
 
 <div class="container">
     <div id="table" class="periodic-table"></div>
 
-    <div class="result-panel" id="result">
-        <div class="selected-info" id="info-text">
-            <p><strong>How to use:</strong></p>
-            <ul>
-                <li>Select the first element (e.g., a metal).</li>
-                <li>Select the second element (e.g., a non-metal).</li>
-                <li>View the predicted formula and bond type.</li>
-            </ul>
+    <div class="result-panel">
+        <div id="info-text">
+            <p><strong>Step 1:</strong> Click the first element.</p>
+            <p><strong>Step 2:</strong> Click the second element to see the result.</p>
+            <p><i>Note: HF is correctly classified as Polar Covalent here (ΔEN = 1.9).</i></p>
         </div>
-        <div class="bond-info" id="bond-display">
-            <div style="color: #999; font-style: italic;">Awaiting selection...</div>
+        <div class="formula-box" id="formula-display">
+            <div style="color: #a0aec0; font-style: italic;">Selection pending...</div>
         </div>
     </div>
 </div>
 
 <script>
-// Element data precisely from the source [1]
+// EN Data from Source [1]
 const elements = [
-    // Period 1
     { n: 1, s: "H", en: 2.1, r: 1, c: 1, v: 1 }, { n: 2, s: "He", en: 0, r: 1, c: 18, v: 0 },
-    // Period 2
     { n: 3, s: "Li", en: 1.0, r: 2, c: 1, v: 1 }, { n: 4, s: "Be", en: 1.5, r: 2, c: 2, v: 2 },
     { n: 5, s: "B", en: 2.0, r: 2, c: 13, v: 3 }, { n: 6, s: "C", en: 2.5, r: 2, c: 14, v: 4 },
     { n: 7, s: "N", en: 3.0, r: 2, c: 15, v: 3 }, { n: 8, s: "O", en: 3.5, r: 2, c: 16, v: 2 },
     { n: 9, s: "F", en: 4.0, r: 2, c: 17, v: 1 }, { n: 10, s: "Ne", en: 0, r: 2, c: 18, v: 0 },
-    // Period 3
     { n: 11, s: "Na", en: 0.9, r: 3, c: 1, v: 1 }, { n: 12, s: "Mg", en: 1.2, r: 3, c: 2, v: 2 },
     { n: 13, s: "Al", en: 1.5, r: 3, c: 13, v: 3 }, { n: 14, s: "Si", en: 1.8, r: 3, c: 14, v: 4 },
     { n: 15, s: "P", en: 2.1, r: 3, c: 15, v: 3 }, { n: 16, s: "S", en: 2.5, r: 3, c: 16, v: 2 },
     { n: 17, s: "Cl", en: 3.0, r: 3, c: 17, v: 1 }, { n: 18, s: "Ar", en: 0, r: 3, c: 18, v: 0 },
-    // Period 4 (Specifics)
     { n: 19, s: "K", en: 0.8, r: 4, c: 1, v: 1 }, { n: 20, s: "Ca", en: 1.0, r: 4, c: 2, v: 2 },
     { n: 35, s: "Br", en: 2.8, r: 4, c: 17, v: 1 },
-    // Period 5 (Specifics)
     { n: 37, s: "Rb", en: 0.8, r: 5, c: 1, v: 1 }, { n: 38, s: "Sr", en: 1.0, r: 5, c: 2, v: 2 },
     { n: 53, s: "I", en: 2.5, r: 5, c: 17, v: 1 },
-    // Period 6 (Specifics)
     { n: 55, s: "Cs", en: 0.7, r: 6, c: 1, v: 1 }, { n: 56, s: "Ba", en: 0.9, r: 6, c: 2, v: 2 }
 ];
 
 let selected = [];
 let nodes = [];
 
-function getColorClass(en) {
+function getColor(en) {
     if (en === 0) return 'noble';
     if (en <= 1.2) return 'low';
     if (en <= 1.9) return 'mid';
@@ -110,7 +100,7 @@ function init() {
             const el = elements.find(e => e.r === r && e.c === c);
             const div = document.createElement('div');
             if (el) {
-                div.className = `element ${getColorClass(el.en)}`;
+                div.className = `element ${getColor(el.en)}`;
                 div.innerHTML = `<span class="number">${el.n}</span><span class="symbol">${el.s}</span><span class="en-val">${el.en || '-'}</span>`;
                 div.onclick = () => select(el, div);
             } else {
@@ -122,63 +112,53 @@ function init() {
 }
 
 function select(el, node) {
-    if (el.en === 0) return alert("Noble gases generally do not form compounds in this scale.");
-    
+    if (el.en === 0) return;
     if (selected.length >= 2) {
         nodes.forEach(n => n.classList.remove('active'));
         selected = []; nodes = [];
     }
-
     selected.push(el);
     nodes.push(node);
     node.classList.add('active');
-
     if (selected.length === 2) calculate();
-    else document.getElementById('info-text').innerHTML = `<p>Selected: <strong>${el.s}</strong>. Now pick a second element.</p>`;
-}
-
-function getFormula(e1, e2) {
-    if (e1.s === e2.s) return `${e1.s}<sub>2</sub>`;
-    let v1 = e1.v, v2 = e2.v;
-    const gcd = (a, b) => b ? gcd(b, a % b) : a;
-    const common = gcd(v1, v2);
-    v1 /= common; v2 /= common;
-    
-    let f1 = v2 === 1 ? "" : v2;
-    let f2 = v1 === 1 ? "" : v1;
-    // Always place lower EN (metal-like) first in formula
-    return e1.en <= e2.en ? `${e1.s}<sub>${f1}</sub>${e2.s}<sub>${f2}</sub>` : `${e2.s}<sub>${f2}</sub>${e1.s}<sub>${f1}</sub>`;
 }
 
 function calculate() {
     const [a, b] = selected;
     const diff = Math.abs(a.en - b.en).toFixed(1);
     
+    // Updated Logic: Use 2.0 as Ionic threshold to handle HF (1.9) correctly as Covalent
     let bond, polarity, color;
-    if (diff >= 1.7) {
+    if (diff >= 2.0) {
         bond = "IONIC BOND";
         polarity = "Highly Polar (Ionic)";
-        color = "#e74c3c";
+        color = "#e53e3e";
     } else if (diff >= 0.5) {
         bond = "COVALENT BOND";
         polarity = "Polar Covalent";
-        color = "#f39c12";
+        color = "#dd6b20";
     } else {
         bond = "COVALENT BOND";
         polarity = a.s === b.s ? "Pure Non-Polar" : "Non-Polar Covalent";
-        color = "#27ae60";
+        color = "#38a169";
     }
 
     document.getElementById('info-text').innerHTML = `
-        <p><strong>Selected Pair:</strong></p>
-        <p>${a.s} (EN: ${a.en}) & ${b.s} (EN: ${b.en})</p>
-        <p><strong>EN Difference (ΔEN):</strong> ${diff}</p>
+        <p><strong>Elements:</strong> ${a.s} & ${b.s}</p>
+        <p><strong>ΔEN:</strong> ${diff}</p>
         <p><strong>Polarity:</strong> ${polarity}</p>
     `;
 
-    document.getElementById('bond-display').innerHTML = `
-        <div style="font-size:0.8rem; color:#666; text-transform:uppercase; letter-spacing:1px;">Common Formula</div>
-        <div class="formula">${getFormula(a, b)}</div>
+    // Formula logic
+    let v1 = a.v, v2 = b.v;
+    const gcd = (x, y) => y ? gcd(y, x % y) : x;
+    const common = gcd(v1, v2);
+    v1 /= common; v2 /= common;
+    const formula = a.en <= b.en ? `${a.s}<sub>${v2>1?v2:''}</sub>${b.s}<sub>${v1>1?v1:''}</sub>` : `${b.s}<sub>${v1>1?v1:''}</sub>${a.s}<sub>${v2>1?v2:''}</sub>`;
+
+    document.getElementById('formula-display').innerHTML = `
+        <div style="font-size:0.7rem; color:#718096; text-transform:uppercase;">Predicted Compound</div>
+        <div class="formula">${formula}</div>
         <div class="badge" style="background-color:${color}">${bond}</div>
     `;
 }
